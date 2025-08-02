@@ -5,7 +5,11 @@ import json
 import threading
 import tkinter as tk
 
-from luna_engine import show_popup, get_luna_mood, generate_luna_greeting, load_user_profile, MOOD_LOG_PATH
+from ui.popup import show_popup
+from core.mood import get_luna_mood
+from core.greeting import generate_luna_greeting
+from core.profile import load_user_profile
+from core.journal import get_last_logged_day, MOOD_LOG_PATH
 
 # -- check if user interacted today or yesterday --
 def interacted_recently():
