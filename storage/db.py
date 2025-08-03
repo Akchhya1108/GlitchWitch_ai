@@ -1,5 +1,3 @@
-# storage/db.py
-
 import sqlite3
 from pathlib import Path
 
@@ -10,48 +8,39 @@ def get_connection():
     return sqlite3.connect(DB_PATH)
 
 def init_db():
-    conn = get_connection()
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    # User Profile
-    cursor.execute("""
+    # Table for user profile
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS user_profile (
             id INTEGER PRIMARY KEY,
             name TEXT,
-            age TEXT,
-            personality TEXT
+            age INTEGER,
+            personality TEXT,
+            created_at TEXT
         )
-    """)
+    ''')
 
-    # Mood Log
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS mood_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            date TEXT,
-            mood TEXT,
-            greeting TEXT
-        )
-    """)
-
-    # Journal Entries
-    cursor.execute("""
+    # Table for journal entries
+    cursor.execute('''
         CREATE TABLE IF NOT EXISTS journal (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT,
             mood TEXT,
             entry TEXT
         )
-    """)
+    ''')
 
-    # Interactions
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS interactions (
+    # ✅ ADD THIS: Table for mood logs
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS mood_logs (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT,
-            pinged INTEGER,
-            responded INTEGER
+            mood TEXT,
+            message TEXT
         )
-    """)
+    ''')
 
     conn.commit()
     conn.close()

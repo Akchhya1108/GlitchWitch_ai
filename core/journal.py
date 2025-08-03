@@ -1,26 +1,61 @@
+import sqlite3
 from datetime import datetime
 import os
+from storage.db import get_connection
 
-MOOD_LOG_PATH = "memory/mood_log.jsonl"
 
-def log_mood(mood, greeting):
-    os.makedirs(os.path.dirname(MOOD_LOG_PATH), exist_ok=True)
-    with open(MOOD_LOG_PATH, "a") as f:
-        f.write(f"{datetime.now().isoformat()} | {mood} | {greeting}\n")
+DB_PATH = os.path.join("memory", "luna_memory.db")
 
-def write_journal_entry(mood, greeting):
-    day = datetime.now().strftime("%Y-%m-%d")
-    path = f"memory/journal/{day}.txt"
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w") as f:
-        f.write(f"🩸 {day} [{mood}]\n\n{greeting}\n")
-        
+def log_mood(mood, message):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    timestamp = datetime.now().isoformat()
+    cursor.execute(
+        "INSERT INTO mood_logs (timestamp, mood, message) VALUES (?, ?, ?)",
+        (timestamp, mood, message)
+    )
+
+    conn.commit()
+    conn.close()
+
+def write_journal_entry(mood, message):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    timestamp = datetime.now().isoformat()
+    cursor.execute(
+        "INSERT INTO journal (timestamp, mood, entry) VALUES (?, ?, ?)",
+        (timestamp, mood, message)
+    )
+
+    conn.commit()
+    conn.close()
+
+def get_journal_entry(date_str):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT mood, entry FROM journal WHERE date = ?", (date_str,))
+    row = cursor.fetchone()
+
+    conn.close()
+
+    if row:
+        return {"mood": row[0], "entry": row[1]}
+    return None
+
 def get_last_logged_day():
-    if not os.path.exists(MOOD_LOG_PATH):
-        return None
-    with open(MOOD_LOG_PATH, "r") as f:
-        lines = f.readlines()
-        if not lines:
-            return None
-        last_entry = lines[-1].split("|")[0].strip()
-        return last_entry[:10]  # yyyy-mm-dd
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT MAX(timestamp) FROM journal
+    """)
+
+    result = cursor.fetchone()
+    conn.close()
+
+    if result and result[0]:
+        return result[0].split("T")[0]  # Return date portion
+    return None

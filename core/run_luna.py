@@ -11,7 +11,7 @@ from ui.popup import show_popup, ask_user_profile
 def run_luna():
     print(">> Running Luna...")
 
-    # ✅ Create DB + tables first
+    
     init_db()
 
     if is_first_run():
@@ -36,6 +36,6 @@ def run_luna():
     yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
     if last_day and last_day != today and last_day != yesterday:
-        show_popup(f"👀 You didn’t run me yesterday, {name}...\nI waited.\n🥲")
+        show_popup(f"You didn’t run me yesterday, {name}...\nI waited.\n🥲")
 
     show_popup(greeting)

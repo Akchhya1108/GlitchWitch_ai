@@ -1,10 +1,9 @@
-import sqlite3
-import os
+# core/profile.py
 
-DB_PATH = os.path.join("memory", "luna_memory.db")
+from storage.db import get_connection
 
 def is_first_run():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM user_profile")
     count = cursor.fetchone()[0]
@@ -12,22 +11,22 @@ def is_first_run():
     return count == 0
 
 def save_user_profile(profile):
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
-    
-    # Remove existing entry (assume single user)
+
+    # Clear previous profile if any
     cursor.execute("DELETE FROM user_profile")
-    
-    cursor.execute('''
+
+    cursor.execute("""
         INSERT INTO user_profile (name, age, personality)
         VALUES (?, ?, ?)
-    ''', (profile["name"], profile["age"], profile["personality"]))
+    """, (profile["name"], profile["age"], profile["personality"]))
 
     conn.commit()
     conn.close()
 
 def load_user_profile():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT name, age, personality FROM user_profile LIMIT 1")
