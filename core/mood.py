@@ -1,21 +1,38 @@
-from datetime import datetime
-from core.journal import get_last_logged_day  # make sure this exists
 import random
+import sqlite3
+from datetime import datetime
+from storage.db import get_connection
 
 def get_luna_mood():
-    now = datetime.now()
-    hour = now.hour
-    today = now.strftime("%Y-%m-%d")
-    last_logged = get_last_logged_day()
+    # Later this will depend on mood trends or user interaction
+    return random.choice(["affectionate", "cold", "gremlin", "journal"])
 
-    # Grudge if ghosted
-    if last_logged and last_logged != today:
-        return "cold" if (now - datetime.strptime(last_logged, "%Y-%m-%d")).days > 1 else "gremlin"
+def log_mood(mood, greeting):
+    conn = get_connection()
+    cursor = conn.cursor()
 
-    # Time-based moods
-    if 6 <= hour < 12:
-        return "affectionate"
-    elif 21 <= hour <= 23 or 0 <= hour < 2:
-        return "chaotic"
+    timestamp = datetime.now().isoformat()
 
-    return random.choice(["affectionate", "cold", "chaotic", "gremlin", "formal"])
+    cursor.execute("""
+        INSERT INTO mood_log (date, mood, greeting)
+        VALUES (?, ?, ?)
+    """, (timestamp, mood, greeting))
+
+    conn.commit()
+    conn.close()
+
+def get_recent_moods(limit=5):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT date, mood, greeting
+        FROM mood_log
+        ORDER BY date DESC
+        LIMIT ?
+    """, (limit,))
+
+    moods = cursor.fetchall()
+    conn.close()
+    
+    return moods
