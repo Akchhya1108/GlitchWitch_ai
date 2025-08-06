@@ -6,7 +6,7 @@ import os
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def get_gpt4o_reply(user_context: str) -> str:
-    if not config.get("use_gpt", True):
+    if not config.get("use_gpt", True) or config.get("minimal_mode", False):
         return "Luna is in minimal mode. No GPT today 💤"
     mood = get_luna_mood()
 

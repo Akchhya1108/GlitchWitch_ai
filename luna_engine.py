@@ -6,16 +6,20 @@ import json
 from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
+from pathlib import Path
 
-
-# === CONFIG ===
-CONFIG_PATH = "config.json"
+CONFIG_PATH = Path("config.json")
 
 def load_config():
-    if os.path.exists(CONFIG_PATH):
+    if CONFIG_PATH.exists():
         with open(CONFIG_PATH, "r") as f:
             return json.load(f)
-    return {"use_gpt": False}
+    return {
+        "use_gpt": True,
+        "minimal_mode": False,
+        "ping_enabled": True,
+        "max_daily_pings": 3
+    }
 
 # === ENV SETUP ===
 load_dotenv()

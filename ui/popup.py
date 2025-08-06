@@ -53,12 +53,20 @@ def ask_user_profile():
         "age": age,
         "personality": personality
     }
-def get_user_response(timeout=60):
-    root = tk.Tk()
-    root.withdraw()
-    root.after(timeout * 1000, root.quit)  # timeout in ms
+def get_user_input(title="Luna", prompt="Talk to me:", timeout=60):
+    response = None
 
-    try:
-        return simpledialog.askstring("Luna wants to talk", "Reply to Luna (or wait to ignore):")
-    except Exception:
-        return None
+    def ask():
+        nonlocal response
+        root = tk.Tk()
+        root.withdraw()
+        root.after(timeout * 1000, root.quit)  # timeout after N seconds
+        response = simpledialog.askstring(title, prompt)
+        root.destroy()
+
+    t = threading.Thread(target=ask)
+    t.start()
+    t.join(timeout + 1)
+
+    return response
+

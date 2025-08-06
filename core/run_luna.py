@@ -51,6 +51,10 @@ def trigger_luna_ping():
     profile = load_user_profile()
     greeting = generate_luna_greeting(mood, profile['name'], profile['personality'])
     show_popup(greeting)
+    
+    from core.reply_handler import chat_with_luna
+    chat_with_luna()
+
 
     log_mood(mood, greeting)
     write_journal_entry(mood, greeting)

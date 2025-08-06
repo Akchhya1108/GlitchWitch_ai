@@ -36,3 +36,25 @@ def get_recent_moods(limit=5):
     conn.close()
     
     return moods
+
+def get_today_mood():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    today = datetime.now().strftime("%Y-%m-%d")
+    cursor.execute("""
+        SELECT mood FROM mood_log
+        WHERE date LIKE ?
+        ORDER BY date DESC
+        LIMIT 1
+    """, (f"{today}%",))
+
+    row = cursor.fetchone()
+    conn.close()
+
+    if row:
+        return row[0]
+    else:
+        # Fallback if no mood logged today
+        return get_luna_mood()
+
