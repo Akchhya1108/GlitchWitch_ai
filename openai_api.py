@@ -6,6 +6,8 @@ import os
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def get_gpt4o_reply(user_context: str) -> str:
+    if not config.get("use_gpt", True):
+        return "Luna is in minimal mode. No GPT today 💤"
     mood = get_luna_mood()
 
     prompt = f"""
@@ -30,3 +32,8 @@ Keep the reply under 35 words.
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"(⚠️ Luna glitched out: {str(e)})"
+from luna_engine import load_config
+config = load_config()
+
+
+

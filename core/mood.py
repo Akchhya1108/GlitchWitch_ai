@@ -5,7 +5,7 @@ from storage.db import get_connection
 
 def get_luna_mood():
     # Later this will depend on mood trends or user interaction
-    return random.choice(["affectionate", "cold", "gremlin", "journal"])
+    return random.choice(["affectionate", "cold", "gremlin", "chaotic"])
 
 def log_mood(mood, greeting):
     conn = get_connection()
