@@ -53,3 +53,12 @@ def ask_user_profile():
         "age": age,
         "personality": personality
     }
+def get_user_response(timeout=60):
+    root = tk.Tk()
+    root.withdraw()
+    root.after(timeout * 1000, root.quit)  # timeout in ms
+
+    try:
+        return simpledialog.askstring("Luna wants to talk", "Reply to Luna (or wait to ignore):")
+    except Exception:
+        return None

@@ -4,6 +4,23 @@ from datetime import datetime, timedelta
 import json
 import threading
 import tkinter as tk
+import psutil
+
+def get_user_context():
+    """Returns basic context about what apps/processes the user is currently running."""
+    context = []
+    for proc in psutil.process_iter(['name']):
+        try:
+            name = proc.info['name']
+            if name:
+                context.append(name.lower())
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+
+    top_apps = [app for app in context if any(x in app for x in ['chrome', 'code', 'word', 'notion', 'discord', 'spotify'])]
+    if not top_apps:
+        return "Just vibing. No major apps running."
+    return f"User is running: {', '.join(set(top_apps))}"
 
 from ui.popup import show_popup
 from core.mood import get_luna_mood
@@ -47,7 +64,26 @@ def send_random_popup():
     mood = get_luna_mood()
     popup_msg = generate_luna_greeting(mood, name, personality)
     show_popup(popup_msg)
+    
+
+def get_user_context():
+    """Returns basic context about what apps/processes the user is currently running."""
+    context = []
+    for proc in psutil.process_iter(['name']):
+        try:
+            name = proc.info['name']
+            if name:
+                context.append(name.lower())
+        except (psutil.NoSuchProcess, psutil.AccessDenied):
+            continue
+
+    top_apps = [app for app in context if any(x in app for x in ['chrome', 'code', 'word', 'notion', 'discord', 'spotify'])]
+    if not top_apps:
+        return "Just vibing. No major apps running."
+    return f"User is running: {', '.join(set(top_apps))}"
+
 
 # -- run the watcher --
 if __name__ == "__main__":
     schedule_random_popups()
+
