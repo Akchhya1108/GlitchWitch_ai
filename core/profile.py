@@ -1,5 +1,3 @@
-# core/profile.py
-
 from storage.db import get_connection
 
 def is_first_run():

@@ -50,3 +50,12 @@ def get_ping_plan():
     result = cursor.fetchone()
     conn.close()
     return 2 + (result[0] if result else 0)  # baseline 2 + 1 ping for each reply
+
+def get_today_replies():
+    today = datetime.now().strftime("%Y-%m-%d")
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT replies FROM ping_tracker WHERE date = ?", (today,))
+    result = cursor.fetchone()
+    conn.close()
+    return result[0] if result else 0
