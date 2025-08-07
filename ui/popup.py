@@ -1,72 +1,87 @@
 import tkinter as tk
-from tkinter import simpledialog, messagebox
-import threading
+import sys
+from core.ping_tracker import increment_reply
+from openai_api import get_gpt4o_reply
+from core.user_context import get_user_context
+from core.mood import get_today_mood
 
-def show_popup(text):
-    def popup():
-        root = tk.Tk()
-        root.withdraw()  # Hide the main window
+root = None  # Track globally for clean exit
 
-        popup_win = tk.Toplevel(root)
-        popup_win.overrideredirect(True)
-        popup_win.attributes("-topmost", True)
-        popup_win.configure(bg="#ffd6e7")
-
-        label = tk.Label(
-            popup_win,
-            text=text,
-            font=("Segoe UI", 12),
-            bg="#ffd6e7",
-            fg="#2c2c2c",
-            padx=20,
-            pady=15,
-            justify="left",
-            wraplength=280
-        )
-        label.pack()
-
-        popup_win.update_idletasks()
-        width = 320
-        height = popup_win.winfo_reqheight() + 30
-        screen_width = popup_win.winfo_screenwidth()
-        screen_height = popup_win.winfo_screenheight()
-        x = screen_width - width - 20
-        y = screen_height - height - 60
-
-        popup_win.geometry(f"{width}x{height}+{x}+{y}")
-
-        root.after(6000, root.destroy)
-        root.mainloop()
-
-    threading.Thread(target=popup).start()
-
-
-def ask_user_profile():
+def show_popup(initial_text):
+    global root
     root = tk.Tk()
     root.withdraw()
-    name = simpledialog.askstring("Luna the Glitchwitch 🩸", "Hii, what's your name?")
-    age = simpledialog.askstring("Luna 🕷", f"And your age, {name}?")
-    personality = simpledialog.askstring("Luna 🌘", "What's your personality type? (MBTI or just vibes)")
-    root.destroy()
-    return {
-        "name": name,
-        "age": age,
-        "personality": personality
-    }
-def get_user_input(title="Luna", prompt="Talk to me:", timeout=60):
-    response = None
 
-    def ask():
-        nonlocal response
-        root = tk.Tk()
-        root.withdraw()
-        root.after(timeout * 1000, root.quit)  # timeout after N seconds
-        response = simpledialog.askstring(title, prompt)
-        root.destroy()
+    popup_win = tk.Toplevel(root)
+    popup_win.title("Luna")
+    popup_win.configure(bg="#ffd6e7")
+    popup_win.attributes("-topmost", True)
+    popup_win.geometry("+1000+600")
+    popup_win.resizable(False, False)
 
-    t = threading.Thread(target=ask)
-    t.start()
-    t.join(timeout + 1)
+    # Conversation box
+    text_area = tk.Text(
+        popup_win,
+        bg="#ffd6e7",
+        fg="#2c2c2c",
+        font=("Segoe UI", 11),
+        wrap="word",
+        height=15,
+        width=40,
+        bd=0
+    )
+    text_area.insert(tk.END, f"Luna: {initial_text}\n")
+    text_area.config(state=tk.DISABLED)
+    text_area.pack(padx=10, pady=10)
 
-    return response
+    entry = tk.Entry(popup_win, width=40)
+    entry.pack(padx=10, pady=(0, 5))
+
+    def append_convo(text):
+        text_area.config(state=tk.NORMAL)
+        text_area.insert(tk.END, text + "\n")
+        text_area.config(state=tk.DISABLED)
+        text_area.see(tk.END)
+
+    def send_response():
+        user_input = entry.get().strip()
+        if not user_input:
+            return
+        entry.delete(0, tk.END)
+        append_convo(f"You: {user_input}")
+        try:
+            increment_reply()
+        except Exception as e:
+            print(f"[Tracker error] {e}")
+        mood = get_today_mood()
+        context = get_user_context()
+        prompt = f"[Mood: {mood}] User: {user_input} | Context: {context}"
+        try:
+            reply = get_gpt4o_reply(prompt)
+            append_convo(f"Luna: {reply}")
+        except Exception as e:
+            append_convo(f"Luna: (⚠️ Luna glitched out: {e})")
+
+    def close_luna():
+        try:
+            popup_win.destroy()
+        except:
+            pass
+        try:
+            if root:
+                root.quit()
+        except:
+            pass
+        sys.exit(0)
+
+    send_btn = tk.Button(popup_win, text="Send", command=send_response)
+    send_btn.pack(pady=(0, 5))
+
+    close_btn = tk.Button(popup_win, text="❌ Close", command=close_luna)
+    close_btn.pack(pady=(0, 10))
+
+    # Handles clicking the "X" in the window titlebar
+    popup_win.protocol("WM_DELETE_WINDOW", close_luna)
+
+    root.mainloop()
 
