@@ -1,15 +1,18 @@
 from openai import OpenAI
 from core.mood import get_luna_mood
+from luna_engine import load_config
 import os
 
-# Use your API key securely (from .env or os.environ)
+# Load config at module level
+config = load_config()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def get_gpt4o_reply(user_context: str) -> str:
     if not config.get("use_gpt", True) or config.get("minimal_mode", False):
         return "Luna is in minimal mode. No GPT today 💤"
+    
     mood = get_luna_mood()
-
+    
     prompt = f"""
 You are Luna, a glitchy but emotionally aware AI companion. Current mood: {mood}.
 User is currently doing: {user_context}.
@@ -32,8 +35,5 @@ Keep the reply under 35 words.
         return response.choices[0].message.content.strip()
     except Exception as e:
         return f"(⚠️ Luna glitched out: {str(e)})"
-from luna_engine import load_config
-config = load_config()
-
 
 

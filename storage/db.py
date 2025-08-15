@@ -32,9 +32,9 @@ def init_db():
         )
     ''')
 
-    # ✅ MOOD LOGS
+    # ✅ MOOD LOG
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS mood_logs (
+        CREATE TABLE IF NOT EXISTS mood_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             timestamp TEXT,
             mood TEXT,

@@ -1,10 +1,14 @@
 import random
+import sqlite3
+from storage.db import DB_PATH
 import time
 from datetime import datetime, timedelta
 import json
 import threading
 import tkinter as tk
 import psutil
+from db.interactions import record_interaction
+
 
 def get_user_context():
     """Returns basic context about what apps/processes the user is currently running."""
@@ -26,33 +30,69 @@ from ui.popup import show_popup
 from core.mood import get_luna_mood
 from core.greeting import generate_luna_greeting
 from core.profile import load_user_profile
-from core.journal import get_last_logged_day, MOOD_LOG_PATH
+from core.journal import get_last_logged_day
 
 # -- check if user interacted today or yesterday --
 def interacted_recently():
-    if not MOOD_LOG_PATH.exists():
-        return False
-
-    with open(MOOD_LOG_PATH, "r") as f:
-        logs = json.load(f)
-
     today = datetime.now().strftime("%Y-%m-%d")
     yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-    return today in logs or yesterday in logs
+
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT COUNT(*) FROM interactions
+        WHERE DATE(timestamp) IN (?, ?)
+    """, (today, yesterday))
+
+    count = cursor.fetchone()[0]
+    conn.close()
+    return count > 0
+
 
 # -- create scheduled popups --
+import random
+from datetime import datetime, timedelta
+import schedule
+import time
+
 def schedule_random_popups():
     if not interacted_recently():
+        print("No recent interaction. Luna won’t schedule future pings today, but this one is for fun.")
         return
 
-    times_today = sorted(random.sample(range(9*60, 20*60), k=random.randint(2, 4)))  # Between 9 AM to 8 PM
-    print(f"[Watcher] Luna will popup at: {[f'{t//60}:{t%60:02}' for t in times_today]}")
+    now = datetime.now()
+    min_time = now.replace(hour=9, minute=0, second=0, microsecond=0)
+    max_time = now.replace(hour=20, minute=0, second=0, microsecond=0)
 
-    for t in times_today:
-        hour, minute = t // 60, t % 60
-        wait_seconds = (datetime(datetime.now().year, datetime.now().month, datetime.now().day, hour, minute) - datetime.now()).total_seconds()
-        if wait_seconds > 0:
-            threading.Timer(wait_seconds, send_random_popup).start()
+    if now > max_time:
+        print("Too late in the day to schedule popups.")
+        return
+
+    # Pick 2 to 4 random times
+    num_pings = random.randint(2, 4)
+    scheduled_times = []
+
+    for _ in range(num_pings):
+        random_minutes = random.randint(0, int((max_time - now).total_seconds() // 60))
+        ping_time = now + timedelta(minutes=random_minutes)
+        scheduled_times.append(ping_time)
+
+        # Schedule each ping
+        schedule_time_str = ping_time.strftime("%H:%M")
+        schedule.every().day.at(schedule_time_str).do(trigger_luna_ping)
+
+    print("[Debug] Scheduled ping times:")
+    for job in schedule.jobs:
+        print(" -", job.at_time)
+
+
+    # Start the scheduler loop
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+
 
 def send_random_popup():
     profile = load_user_profile()
@@ -64,6 +104,8 @@ def send_random_popup():
     mood = get_luna_mood()
     popup_msg = generate_luna_greeting(mood, name, personality)
     show_popup(popup_msg)
+    print("[Watcher] Luna is sending a popup at", datetime.now().strftime("%H:%M"))
+
     
 
 def get_user_context():
@@ -87,3 +129,4 @@ def get_user_context():
 if __name__ == "__main__":
     schedule_random_popups()
 
+send_random_popup()
