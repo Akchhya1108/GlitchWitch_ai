@@ -2,6 +2,10 @@ import sqlite3
 from datetime import datetime
 import os
 from storage.db import get_connection
+from pathlib import Path
+
+MOOD_LOG_PATH = Path("memory/mood_log.json")  
+
 
 
 DB_PATH = os.path.join("memory", "luna_memory.db")
