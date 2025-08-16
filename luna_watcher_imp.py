@@ -7,6 +7,11 @@ from pathlib import Path
 from storage.db import get_connection
 from core.run_luna import trigger_agentic_ping
 from core.ping_tracker import increment_ping, get_today_replies
+import json
+
+def load_config():
+    with open('config.json', 'r') as f:
+        return json.load(f)
 
 class LunaWatcher:
     def __init__(self):
