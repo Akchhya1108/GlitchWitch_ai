@@ -37,23 +37,37 @@ def run_luna():
     yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
 
     if last_day and last_day != today and last_day != yesterday:
-        greeting = f"You didn’t run me yesterday, {name}...\nI waited.\n🥲"
+        greeting = f"You didn't run me yesterday, {name}...\nI waited.\n🥲"
 
     # Only show popup ONCE with final greeting
     show_popup(greeting)
 
     print("🌙 Luna shut down.")
 
-# For scheduled pings (background mode)
-def trigger_luna_ping():
+# For scheduled pings (background mode) - now accepts context
+def trigger_luna_ping(context=""):
     mood = get_luna_mood()
     profile = load_user_profile()
-    greeting = generate_luna_greeting(mood, profile['name'], profile['personality'])
+    
+    if not profile:
+        print("⚠️ No user profile found")
+        return
+        
+    name = profile['name']
+    personality = profile.get('personality', 'unknown')
 
-    log_mood(mood, greeting)
-    write_journal_entry(mood, greeting)
+    # Generate contextual greeting
+    if context:
+        # Use context to make greeting more relevant
+        user_context = f"{get_user_context()} | {context}"
+        luna_reply = get_gpt4o_reply(user_context)
+    else:
+        greeting = generate_luna_greeting(mood, name, personality)
+        user_context = get_user_context()
+        luna_reply = get_gpt4o_reply(user_context)
 
-    user_context = get_user_context()
-    luna_reply = get_gpt4o_reply(user_context)
+    # Log the interaction
+    log_mood(mood, luna_reply)
+    write_journal_entry(mood, f"Context: {context} | Reply: {luna_reply}")
 
     show_popup(luna_reply)

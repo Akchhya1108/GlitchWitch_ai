@@ -12,21 +12,59 @@ def run_scheduler():
         return
 
     print("🌘 Luna scheduler started...")
+    
+    # Track when we last pinged to avoid spamming
+    last_ping_time = None
+    daily_ping_count = 0
+    last_reset_date = datetime.now().date()
 
-    base_pings = config.get("max_daily_pings", 3)
-    replies = get_today_replies()
-    total_pings = base_pings + replies
-
-    print(f"[Luna] Base: {base_pings}, Replies: {replies} → Total: {total_pings} pings")
-
-    # Spread pings from now to 10 hours ahead
-    now = datetime.now()
-    end = now + timedelta(hours=10)
-    intervals = sorted(random.sample(range(600, int((end - now).total_seconds())), total_pings))
-
-    for i, delay in enumerate(intervals):
-        print(f"🔮 Ping #{i+1} scheduled in {delay//60} min")
-        time.sleep(delay)  # wait for scheduled time
-
-        trigger_luna_ping()
-        increment_ping()
+    while True:
+        try:
+            current_time = datetime.now()
+            current_date = current_time.date()
+            current_hour = current_time.hour
+            
+            # Reset daily counter at midnight
+            if current_date != last_reset_date:
+                daily_ping_count = 0
+                last_reset_date = current_date
+                print(f"🌅 New day! Reset ping counter.")
+            
+            # Only ping during reasonable hours (9 AM to 9 PM)
+            if 9 <= current_hour <= 21:
+                base_pings = config.get("max_daily_pings", 3)
+                replies_today = get_today_replies()
+                max_pings = base_pings + replies_today
+                
+                # Check if we should ping
+                should_ping = False
+                
+                if daily_ping_count < max_pings:
+                    if last_ping_time is None:
+                        # First ping of the day
+                        should_ping = True
+                    else:
+                        # Wait at least 2-4 hours between pings
+                        min_interval = timedelta(hours=random.randint(2, 4))
+                        if current_time - last_ping_time >= min_interval:
+                            should_ping = True
+                
+                if should_ping:
+                    print(f"🔮 Triggering Luna ping #{daily_ping_count + 1}")
+                    trigger_luna_ping()
+                    increment_ping()
+                    
+                    last_ping_time = current_time
+                    daily_ping_count += 1
+                    
+                    print(f"📊 Today's stats: {daily_ping_count}/{max_pings} pings sent")
+            
+            # Sleep for 30 minutes before checking again
+            time.sleep(1800)  # 30 minutes
+            
+        except KeyboardInterrupt:
+            print("\n🌙 Scheduler stopped by user")
+            break
+        except Exception as e:
+            print(f"⚠️ Scheduler error: {e}")
+            time.sleep(300)  # Wait 5 minutes before retrying

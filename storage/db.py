@@ -32,22 +32,33 @@ def init_db():
         )
     ''')
 
-    # ✅ MOOD LOG
+    # ✅ MOOD LOG - Fixed column name to match mood.py
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS mood_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
+            date TEXT,
             mood TEXT,
-            message TEXT
+            greeting TEXT
         )
     ''')
 
-    # ✅ PING TRACKER (this was missing)
+    # ✅ PING TRACKER
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS ping_tracker (
             date TEXT PRIMARY KEY,
             pings INTEGER DEFAULT 0,
             replies INTEGER DEFAULT 0
+        )
+    ''')
+
+    # ✅ INTERACTIONS TABLE (for tracking user engagement)
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS interactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            interaction_type TEXT,
+            user_input TEXT,
+            luna_response TEXT
         )
     ''')
 
