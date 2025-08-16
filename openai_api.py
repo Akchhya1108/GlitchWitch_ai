@@ -36,4 +36,22 @@ Keep the reply under 35 words.
     except Exception as e:
         return f"(⚠️ Luna glitched out: {str(e)})"
 
-
+# Add a new function for the Instagram UI
+def get_openai_response(prompt: str) -> str:
+    """Direct OpenAI response for Instagram UI integration"""
+    if not config.get("use_gpt", True) or config.get("minimal_mode", False):
+        return "I'm in minimal mode right now... my neural networks are taking a break 💤"
+    
+    try:
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are Luna, an agentic AI companion who evolves through conversations."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=200,
+            temperature=0.8
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        return f"⚡ My circuits are having trouble connecting... {str(e)[:50]}"
