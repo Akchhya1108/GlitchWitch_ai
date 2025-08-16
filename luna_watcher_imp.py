@@ -8,10 +8,31 @@ from storage.db import get_connection
 from core.run_luna import trigger_agentic_ping
 from core.ping_tracker import increment_ping, get_today_replies
 import json
+import os
 
 def load_config():
-    with open('config.json', 'r') as f:
-        return json.load(f)
+    """Load configuration from config.json"""
+    try:
+        with open('config.json', 'r') as f:
+            config = json.load(f)
+            print(f"✅ Config loaded: {config}")
+            return config
+    except FileNotFoundError:
+        print("⚠️ config.json not found, using defaults")
+        return {
+            "use_gpt": True,
+            "minimal_mode": False, 
+            "ping_enabled": True,
+            "max_daily_pings": 3
+        }
+    except json.JSONDecodeError as e:
+        print(f"❌ Error reading config.json: {e}")
+        return {
+            "use_gpt": True,
+            "minimal_mode": False, 
+            "ping_enabled": True,
+            "max_daily_pings": 3
+        }
 
 class LunaWatcher:
     def __init__(self):
@@ -158,7 +179,7 @@ class LunaWatcher:
         full_context = f"[{context_reason}] Recent activity: {activity_context}"
         
         print(f"🌙 Luna pinging with context: {full_context}")
-        trigger_luna_ping(context=full_context)
+        trigger_agentic_ping(context=full_context)
         increment_ping()
         
         self.last_ping_time = datetime.now()
