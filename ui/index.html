@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luna - Agentic AI Companion</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="popup-container" id="lunaPopup">
+        <div class="popup-header">
+            <div class="luna-info">
+                <div class="luna-avatar">L</div>
+                <div class="luna-details">
+                    <h3>Luna</h3>
+                    <p class="luna-status" id="lunaStatus">Agentic AI • Evolving</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn minimize-btn" onclick="toggleMinimize()" title="Minimize">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+                    </svg>
+                </button>
+                <button class="btn close-btn" onclick="closePopup()" title="Close">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="popup-body">
+            <div class="conversation-history" id="conversationHistory">
+                <div class="message luna">
+                    <div class="message-content" id="initialMessage">
+                        Hi! I'm Luna, your evolving AI companion. How can I help you today? 🌙
+                    </div>
+                </div>
+            </div>
+            
+            <div class="quick-actions">
+                <span class="quick-action" onclick="sendQuickMessage('How are you?')">How are you?</span>
+                <span class="quick-action" onclick="sendQuickMessage('Tell me something interesting')">Something interesting</span>
+                <span class="quick-action" onclick="sendQuickMessage('What are you thinking?')">Your thoughts?</span>
+            </div>
+
+            <div class="context-info" id="contextInfo">
+                Context: Interactive session
+            </div>
+
+            <div class="input-section">
+                <div class="input-wrapper">
+                    <textarea 
+                        class="user-input" 
+                        id="userInput" 
+                        placeholder="Type your message..." 
+                        rows="1"
+                        onkeydown="handleKeyDown(event)"
+                        oninput="autoResize(this)"
+                    ></textarea>
+                </div>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.001.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                    </svg>
+                    Send
+                </button>
+            </div>
+
+            <div class="thinking" id="thinkingIndicator" style="display: none;">
+                <span>Luna is thinking</span>
+                <div class="thinking-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
