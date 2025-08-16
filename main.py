@@ -9,7 +9,7 @@ load_dotenv()
 print("API KEY (preview):", os.getenv("OPENAI_API_KEY")[:10])
 
 from core.run_luna import run_luna, get_luna_evolution_status
-from luna_watcher_improved import LunaWatcher
+from luna_watcher_imp import LunaWatcher
 from core.run_luna import trigger_agentic_ping
 
 ascii_logo = r"""

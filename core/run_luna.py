@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from storage.db import init_db
 from core.profile import is_first_run, load_user_profile
 from core.agentic_luna import luna_respond, get_luna_status
-from ui.web_popup import show_agentic_popup
+from ui.webpopup import show_agentic_popup
 from core.user_context import get_user_context
 from core.journal import write_journal_entry, get_last_logged_day
 
